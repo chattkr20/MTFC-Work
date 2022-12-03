@@ -1,0 +1,104 @@
+---
+title: "MTFC"
+author: "Krish Chatterjee"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(flexdashboard)
+library(shiny)
+library(ggplot2)
+library(plotly)
+library(data.table)
+library(curl)
+library(gridExtra)
+library(tidyverse)
+library(readxl)
+```
+
+```{r}
+
+df = read_excel("death_data.xlsx")
+
+attach(df)
+
+df = df[c(-3)]
+colnames(df)[2] = "cause_death"
+
+ten = df %>% group_by(cause_death) %>%
+  summarize(
+    total_deaths = sum(Deaths)
+  )
+
+df = df %>% group_by(Year, cause_death) %>%
+  summarize(
+    total_deaths = sum(Deaths)
+  )
+
+ten = ten[order(-ten$total_deaths),]
+ten = ten[c(1:10),]
+
+ten
+
+df <- data.frame(df)
+
+heart = df[df$cause_death == "Diseases of heart (I00-I09,I11,I13,I20-I51)",]
+neo = df[df$cause_death == "Malignant neoplasms (C00-C97)",]
+acc = df[df$cause_death == "Accidents (unintentional injuries) (V01-X59,Y85-Y86)",]
+chron = df[df$cause_death == "Chronic lower respiratory diseases (J40-J47)",]
+cere = df[df$cause_death == "Cerebrovascular diseases (I60-I69)",]
+infl = df[df$cause_death == "Influenza and pneumonia (J09-J18)",]
+alz = df[df$cause_death == "Alzheimer's disease (G30)",]
+neph = df[df$cause_death == "Nephritis, nephrotic syndrome and nephrosis (N00-N07,N17-N19,N25-N27)",]
+tran = df[df$cause_death == "Transport accidents (V01-V99,Y85)",]
+sui = df[df$cause_death == "Intentional self-harm (suicide) (*U03,X60-X84,Y87.0)",]
+
+ggplot() +
+  geom_line(data = heart, aes(Year, total_deaths), color = "red")+
+  geom_line(data = neo, aes(Year, total_deaths), color = "blue")+
+  geom_line(data = acc, aes(Year, total_deaths), color = "green")+
+  geom_line(data = chron, aes(Year, total_deaths), color = "orange")+
+  geom_line(data = cere, aes(Year, total_deaths), color = "maroon")+
+  geom_line(data = infl, aes(Year, total_deaths), color = "pink")+
+  geom_line(data = alz, aes(Year, total_deaths), color = "purple")+
+  geom_line(data = neph, aes(Year, total_deaths), color = "gray")+
+  geom_line(data = tran, aes(Year, total_deaths), color = "violet")+
+  geom_line(data = sui, aes(Year, total_deaths), color = "yellow")+
+  xlab("Year")+
+  ylab("Total Deaths")+
+  labs(
+    color = "Legend"
+  )
+
+
+ggplot() +
+  geom_line(data = acc, aes(Year, total_deaths), color = "green")+
+  geom_line(data = chron, aes(Year, total_deaths), color = "orange")+
+  geom_line(data = cere, aes(Year, total_deaths), color = "maroon")+
+  geom_line(data = infl, aes(Year, total_deaths), color = "pink")+
+  geom_line(data = alz, aes(Year, total_deaths), color = "purple")+
+  geom_line(data = neph, aes(Year, total_deaths), color = "gray")+
+  geom_line(data = tran, aes(Year, total_deaths), color = "violet")+
+  geom_line(data = sui, aes(Year, total_deaths), color = "yellow")+
+  xlab("Year")+
+  ylab("Total Deaths")+
+  labs(
+    color = "Legend"
+  )
+
+nutone = heart[c(heart$Year >= 1999 & heart$Year <= 2009),]
+nutone
+
+ggplot(data = nutone, aes(Year, total_deaths))+
+  geom_point(color = "red")+
+  geom_smooth(color = "blue")
+
+pred = lm(total_deaths ~ Year, data = nutone)
+plot(nutone$Year, nutone$total_deaths)
+abline(pred)
+
+pred
+
+```
